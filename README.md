@@ -369,6 +369,7 @@ This UI demonstration goes through:
 
 ![Admin Interface](../Candace%20Virtual%20Assistant/app/static/images/Admin-interface.gif)
 
+
 ---
 
 ## **GPU Acceleration (Windows + NVIDIA CUDA)
