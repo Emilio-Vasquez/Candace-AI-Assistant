@@ -359,7 +359,7 @@ This UI demonstration goes through:
 
 - (1) User Interface, Academic monthly calendar UI.
 
-![User Interface](./Candace%20Virtual%20Assistant/app/static/images/User-walkthrough.gif)
+![User Interface](./Candace%20Virtual%20Assistant/app/static/images/UI-walkthrough.gif)
 
 - (2) the chatbot answering questions, and demonstrating the runtime for each query.
 
