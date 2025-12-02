@@ -216,3 +216,6 @@ app/models/**/Meta-Llama*
 
 app/vectorstore/store/*
 !app/vectorstore/store/.gitkeep
+
+## tree
+tree.txt
