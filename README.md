@@ -367,7 +367,7 @@ This UI demonstration goes through:
 
 - (3) Admin interface
 
-![Admin Interface](../Candace%20Virtual%20Assistant/app/static/images/Admin-interface.gif)
+![Admin Interface](./Candace%20Virtual%20Assistant/app/static/images/Admin-interface.gif)
 
 
 ---
