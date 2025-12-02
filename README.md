@@ -363,7 +363,7 @@ This UI demonstration goes through:
 
 - (2) the chatbot answering questions, and demonstrating the runtime for each query.
 
-![Chatbot Answers](./Candace%20Virtual%20Assistant/app/static/images/Chatbot-responses.png)
+![Chatbot Answers](./Candace%20Virtual%20Assistant/app/static/images/Chatbot-responses.gif)
 
 - (3) Admin interface
 
