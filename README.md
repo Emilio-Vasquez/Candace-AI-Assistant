@@ -357,10 +357,10 @@ This diagram explains:
 This UI demonstration goes through:
 
 - (1) User Interface, Academic monthly calendar UI.
-![User Interface](./app/static/images/User-walkthrough.gif)
+![User Interface](app/static/images/User-walkthrough.gif)
 
 - (2) the chatbot answering questions, and demonstrating the runtime for each query.
-![Chatbot Answers](./app/static/images/Chatbot-responses.png)
+![Chatbot Answers](../app/static/images/Chatbot-responses.png)
 
 - (3) Admin interface
 ![Admin Interface](./app/static/images/Admin-interface.gif)
