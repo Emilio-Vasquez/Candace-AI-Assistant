@@ -327,22 +327,22 @@ Below is the complete top-level system architecture showing how each module inte
 
 **Detailed Component Diagram**
 
-![System Architecture Diagram](./app/static/images/architecture.png)
+![System Architecture Diagram](./Candace%20Virtual%20Assistant/app/static/images/architecture.png)
 
 **RAG Pipeline Diagram**
 
 This diagram explains:
 - How SQL data (structured) combines with PDF/text syllabus & catalog data (unstructured) to produce combined context for the LLM.
 
-![RAG Nodes Diagram](./app/static/images/nodes_rag.png)
+![RAG Nodes Diagram](./Candace%20Virtual%20Assistant/app/static/images/nodes_rag.png)
 
 **Request Sequence (Chatbot Flow)**
 
-![Sequence Diagram for /chatbot](./app/static/images/sequence_diagram.png)
+![Sequence Diagram for /chatbot](./Candace%20Virtual%20Assistant/app/static/images/sequence_diagram.png)
 
 **GPU Runtime Verification**
 
-![GPU Runtime Verification](./app/static/images/nvidia-smi.png)
+![GPU Runtime Verification](./Candace%20Virtual%20Assistant/app/static/images/nvidia-smi.png)
 
 **This proves:**
 - CUDA 13.0
@@ -358,13 +358,16 @@ This diagram explains:
 This UI demonstration goes through:
 
 - (1) User Interface, Academic monthly calendar UI.
-![User Interface](./app/static/images/User-walkthrough.gif)
+
+![User Interface](./Candace%20Virtual%20Assistant/app/static/images/User-walkthrough.gif)
 
 - (2) the chatbot answering questions, and demonstrating the runtime for each query.
-![Chatbot Answers](./app/static/images/Chatbot-responses.png)
+
+![Chatbot Answers](./Candace%20Virtual%20Assistant/app/static/images/Chatbot-responses.png)
 
 - (3) Admin interface
-![Admin Interface](./app/static/images/Admin-interface.gif)
+
+![Admin Interface](../Candace%20Virtual%20Assistant/app/static/images/Admin-interface.gif)
 
 ---
 
