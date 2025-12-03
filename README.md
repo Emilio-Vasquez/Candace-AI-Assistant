@@ -372,7 +372,7 @@ This UI demonstration goes through:
 
 ---
 
-## **GPU Acceleration (Windows + NVIDIA CUDA)
+## **GPU Acceleration (Windows + NVIDIA CUDA)**
 
 **llama_cpp + PyTorch + SentenceTransformers + CUDA 13.0**
 
