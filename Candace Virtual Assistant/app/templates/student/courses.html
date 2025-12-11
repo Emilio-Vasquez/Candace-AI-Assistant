@@ -3,7 +3,7 @@
 
 {% block title %}My Courses{% endblock %}
 {% block header_title %}Courses{% endblock %}
-{% block header_subtitle %}Current and previously completed courses{% endblock %}
+{% block header_subtitle %}Current, upcoming, and completed courses{% endblock %}
 
 {% block content %}
 
@@ -31,6 +31,34 @@
         {% endfor %}
     {% else %}
         <p>No current courses.</p>
+    {% endif %}
+</div>
+
+<hr style="margin: 24px 0;">
+
+<div class="section-header">
+    <div>
+        <div class="section-title">Upcoming Courses</div>
+        <div class="section-subtitle">
+            Courses you’re registered for in future terms.
+        </div>
+    </div>
+</div>
+
+<div class="card-grid">
+    {% if upcoming %}
+        {% for c in upcoming %}
+        <a class="course-card"
+           href="{{ url_for('main.course_shell', class_id=c.class_id) }}">
+            <div class="course-card-banner"></div>
+            <div class="course-card-body">
+                <div class="course-card-title">{{ c.course_name }}</div>
+                <div class="course-card-term">{{ c.course_credits }} credits</div>
+            </div>
+        </a>
+        {% endfor %}
+    {% else %}
+        <p>No upcoming courses.</p>
     {% endif %}
 </div>
 

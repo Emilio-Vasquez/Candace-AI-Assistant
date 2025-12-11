@@ -319,3 +319,8 @@ ALTER TABLE students
     ADD CONSTRAINT fk_students_user
         FOREIGN KEY (user_id) REFERENCES users(id)
         ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE classes
+    ADD COLUMN term_code  VARCHAR(20) NOT NULL DEFAULT '2025FA',
+    ADD COLUMN term_start DATE NULL,
+    ADD COLUMN term_end   DATE NULL;

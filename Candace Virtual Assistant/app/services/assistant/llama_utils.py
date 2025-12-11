@@ -2,6 +2,7 @@ import os
 import threading
 from llama_cpp import Llama
 from config import Config
+from app.services import rag_utils
 
 # ---------------------------------------------------------------------------
 # Configuration: paths and environment variables
@@ -195,13 +196,40 @@ def generate_response(
     if max_new_tokens is None:
         max_new_tokens = LLAMA_MAX_NEW_TOKENS
 
-    # Safety: don't ask for more tokens than the context window
-    if max_new_tokens > LLAMA_N_CTX:
+    # --- NEW: compute how many tokens we can actually afford ---
+    prompt_tokens_est = rag_utils.estimate_tokens(prompt)
+    n_ctx = LLAMA_N_CTX
+
+    # leave a small safety buffer so we don't hit the hard limit
+    safety = 128
+    max_total_tokens = n_ctx - safety
+    available_for_new = max_total_tokens - prompt_tokens_est
+
+    if available_for_new <= 64:
+        # if the prompt is already huge, force a tiny generation
         print(
-            f"[Candace][LLAMA][WARN] max_new_tokens={max_new_tokens} > n_ctx={LLAMA_N_CTX}; "
+            f"[Candace][LLAMA][WARN] Prompt is very large "
+            f"(~{prompt_tokens_est} tokens); limiting generation to 64 tokens."
+        )
+        max_new_tokens_allowed = 64
+    else:
+        max_new_tokens_allowed = available_for_new
+
+    if max_new_tokens > max_new_tokens_allowed:
+        print(
+            f"[Candace][LLAMA][WARN] max_new_tokens={max_new_tokens} would exceed "
+            f"context (prompt≈{prompt_tokens_est}, n_ctx={n_ctx}); "
+            f"clamping to {max_new_tokens_allowed}."
+        )
+        max_new_tokens = max_new_tokens_allowed
+
+    # Safety: still don't ask for more tokens than the context window
+    if max_new_tokens > n_ctx:
+        print(
+            f"[Candace][LLAMA][WARN] max_new_tokens={max_new_tokens} > n_ctx={n_ctx}; "
             f"clamping to n_ctx."
         )
-        max_new_tokens = LLAMA_N_CTX
+        max_new_tokens = n_ctx
 
     print(
         f"[Candace][LLAMA] generate_response() with max_new_tokens={max_new_tokens}, "
@@ -223,7 +251,6 @@ def generate_response(
         text = text.strip()
 
     return text
-
 
 def free():
     """

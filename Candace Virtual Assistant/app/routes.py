@@ -7,7 +7,7 @@ from config import Config
 import os
 from werkzeug.security import generate_password_hash
 from .auth_utils import login_user, logout_user, login_required, get_current_user, verify_login_credentials, role_required
-from datetime import datetime
+from datetime import datetime, date
 import re
 from typing import List
 import time
@@ -239,22 +239,76 @@ def ChatbotEndpoint():
         # Current course schedule
         schedule_rows = query_db(
             """
-            SELECT c.course_name, c.course_credits, cl.class_type
+            SELECT
+                c.course_name,
+                c.course_credits,
+                cl.class_type,
+                cl.class_id,
+                cl.term_code,
+                cl.term_start,
+                cl.term_end
             FROM schedule s
             JOIN classes cl ON s.class_id = cl.class_id
             JOIN courses c ON cl.course_id = c.course_id
             WHERE s.student_id = %s
+            ORDER BY cl.term_start, c.course_name
             """,
             (student_id,),
         )
 
         if schedule_rows:
-            student_context_parts.append("Current Enrolled Courses:")
+            today = date.today()
+
+            current_courses = []
+            upcoming_courses = []
+            completed_courses = []
+
             for row in schedule_rows:
-                student_context_parts.append(
-                    f"- {row['course_name']} "
-                    f"({row['course_credits']} credits, {row['class_type']})"
-                )
+                start = row.get("term_start")
+                end   = row.get("term_end")
+
+                # If no dates, treat as current (safe default for synthetic data)
+                if not start or not end:
+                    current_courses.append(row)
+                    continue
+
+                if start <= today <= end:
+                    current_courses.append(row)
+                elif today < start:
+                    upcoming_courses.append(row)
+                else:
+                    completed_courses.append(row)
+
+            # Build student context summaries
+            if current_courses:
+                student_context_parts.append("Current Enrolled Courses:")
+                for row in current_courses:
+                    term_label = row.get("term_code") or ""
+                    student_context_parts.append(
+                        f"- {row['course_name']} "
+                        f"({row['course_credits']} credits, {row['class_type']}"
+                        f"{', ' + term_label if term_label else ''})"
+                    )
+
+            if upcoming_courses:
+                student_context_parts.append("Upcoming Courses (future terms):")
+                for row in upcoming_courses:
+                    term_label = row.get("term_code") or ""
+                    student_context_parts.append(
+                        f"- {row['course_name']} "
+                        f"({row['course_credits']} credits"
+                        f"{', ' + term_label if term_label else ''})"
+                    )
+
+            if completed_courses:
+                student_context_parts.append("Completed Courses:")
+                for row in completed_courses:
+                    term_label = row.get("term_code") or ""
+                    student_context_parts.append(
+                        f"- {row['course_name']} "
+                        f"({row['course_credits']} credits"
+                        f"{', ' + term_label if term_label else ''})"
+                    )
 
     student_context = ""
     if student_context_parts:
@@ -264,23 +318,75 @@ def ChatbotEndpoint():
     # 1.5) Course-specific assignments and grades
     # --------------------------------------------------
     # Detect intent
-    assignment_question = bool(
-        re.search(r"\bassignments?\b|\bhomework\b|\bessay\b", user_message, re.IGNORECASE)
-    )
+    ASSIGNMENT_KEYWORDS = [
+        "assignment", "assignments",
+        "homework", "hw",
+        "essay", "paper",
+        "due", "due date",
+        "deadline",
+        "missing", "late work",
+        "what am i missing",
+        "what assignments am i missing",
+        "incomplete work",
+        "upcoming work",
+        "overdue",
+    ]
 
     text = user_message.lower()
-    grade_question = any(
-        kw in text
-        for kw in (
-            "grade",      # catches "grade" and "grades"
-            "average",
-            "percent",
-            "percentage",
-            "score",
-            "final",      # "final exam", "on the final"
-            "gpa",
-        )
-    )
+
+    # -------------------------
+    # ASSIGNMENT / MISSING WORK
+    # -------------------------
+    assignment_question = any(kw in text for kw in ASSIGNMENT_KEYWORDS)
+
+    # Special-case regex to catch:
+    # "what assignments am I missing?", "am I missing anything?" etc.
+    if re.search(r"\bmissing\b|\boverdue\b|\bwhat.+missing\b", text):
+        assignment_question = True
+
+    # -------------------------
+    # GRADES / PERFORMANCE
+    # -------------------------
+    GRADE_KEYWORDS = [
+        "grade", "grades",
+        "score", "scores",
+        "average", "percent", "percentage",
+        "gpa",
+        "how am i doing",
+        "am i passing",
+        "am i failing",
+        "current standing",
+        "class standing",
+        "course standing",
+        "what's my grade",
+        "what are my grades",
+        "my grades",
+        "weighted",
+        "final",           # covers "final grade", "final exam"
+        "progress",
+    ]
+
+    grade_question = any(kw in text for kw in GRADE_KEYWORDS)
+
+    # Strengthen with regex for vague but common student phrasing
+    if re.search(r"how.?am.?i.?doing|am.?i.?passing|am.?i.?failing", text):
+        grade_question = True
+
+    # -------------------------
+    # COURSE LIST / "WHAT AM I TAKING?"
+    # -------------------------
+    COURSE_LIST_KEYWORDS = [
+        "current courses",
+        "my courses",
+        "what are my courses",
+        "what are my current classes",
+        "what classes am i taking",
+        "what am i taking this semester",
+        "course list",
+        "class list",
+    ]
+
+    course_list_question = any(kw in text for kw in COURSE_LIST_KEYWORDS)
 
     # Try to detect one or more course codes like ENG 101 / ENG-101
     course_codes = detect_course_codes(user_message)
@@ -288,8 +394,36 @@ def ChatbotEndpoint():
     assignment_block = None
     grade_block = None
 
-    # --- Assignments for one or more specific courses ---
-    if assignment_question and student_id and course_codes:
+    # If it's clearly a grade/assignment question but we
+    # didn't detect any course codes in the text, treat
+    # it as "all my courses" and derive course hints.
+    if (grade_question or assignment_question) and student_id and not course_codes and not course_list_question:
+        enrolled_rows = query_db(
+            """
+            SELECT DISTINCT c.course_name
+            FROM schedule s
+            JOIN classes cl ON s.class_id = cl.class_id
+            JOIN courses c  ON cl.course_id = c.course_id
+            WHERE s.student_id = %s
+            ORDER BY c.course_name
+            """,
+            (student_id,),
+        )
+
+        derived_codes: list[str] = []
+        for row in enrolled_rows or []:
+            # e.g. "ENG 101 - English Composition I" -> "ENG 101"
+            course_name = row["course_name"]
+            if not course_name:
+                continue
+            code_hint = course_name.split(" - ", 1)[0].strip()
+            if code_hint and code_hint not in derived_codes:
+                derived_codes.append(code_hint)
+
+        course_codes = derived_codes
+
+    # --- Assignments for one or more specific (or all) courses ---
+    if assignment_question and student_id and course_codes and not course_list_question:
         all_lines: list[str] = []
 
         for course_code_hint in course_codes:
@@ -346,8 +480,8 @@ def ChatbotEndpoint():
         if all_lines:
             assignment_block = "\n".join(all_lines)
 
-    # --- Grade summary for one or more specific courses ---
-    if grade_question and student_id and course_codes:
+    # --- Grade summary for one or more specific (or all) courses ---
+    if grade_question and student_id and course_codes and not course_list_question:
         grade_lines: list[str] = []
 
         # Figure out if they asked "what do I need on X%?"
@@ -446,13 +580,35 @@ def ChatbotEndpoint():
         if student_context:
             student_context += "\n\n"
         student_context += "\n\n".join(extra_blocks)
-
+        
     # --------------------------------------------------
     # 2) Retrieve RAG context (catalog + weekly + docs)
     #    and FILTER it so student-specific docs only
     #    show for the logged-in student.
     # --------------------------------------------------
-    raw_hits = rag_utils.retrieve(user_message)
+    SCHEDULE_KEYWORDS = [
+        "my courses",
+        "my classes",
+        "current courses",
+        "current classes",
+        "upcoming courses",
+        "future courses",
+        "future classes",
+        "what courses am i taking",
+        "what classes am i taking",
+        "what am i taking",
+        "my schedule",
+        "class schedule",
+    ]
+
+    is_schedule_question = any(kw in text for kw in SCHEDULE_KEYWORDS)
+
+    if is_schedule_question:
+        # For schedule-style questions, rely ONLY on Student Context (DB),
+        # and do NOT pull global catalog docs from RAG.
+        raw_hits = []
+    else:
+        raw_hits = rag_utils.retrieve(user_message)
 
     def _get_hit_text(hit):
         # Be robust to different rag_utils shapes
@@ -468,10 +624,10 @@ def ChatbotEndpoint():
     filtered_hits = []
     if raw_hits:
         for h in raw_hits:
-            text = _get_hit_text(h)
+            text_chunk = _get_hit_text(h)
 
             # If chunk clearly has a STUDENT_ID marker, only keep if it matches.
-            m = re.search(r"STUDENT_ID:\s*(\d+)", text)
+            m = re.search(r"STUDENT_ID:\s*(\d+)", text_chunk)
             if m:
                 try:
                     sid_in_doc = int(m.group(1))
@@ -1058,46 +1214,60 @@ def account():
 @login_required
 def courses():
     user = get_current_user()
+    student_id = user.get("student_id") if user else None
 
     current_courses = []
+    upcoming_courses = []
     completed_courses = []
 
-    if user.get("student_id"):
-        current_courses = query_db("""
+    if student_id:
+        # Pull all enrolled classes with term metadata
+        schedule_rows = query_db(
+            """
             SELECT
                 cl.class_id AS class_id,
                 c.course_name,
                 c.course_credits,
-                cl.class_type
+                cl.class_type,
+                cl.term_code,
+                cl.term_start,
+                cl.term_end
             FROM schedule s
             JOIN classes cl ON s.class_id = cl.class_id
-            JOIN courses c ON cl.course_id = c.course_id
+            JOIN courses c  ON cl.course_id = c.course_id
             WHERE s.student_id = %s
-        """, (user["student_id"],))
+            ORDER BY cl.term_start, c.course_name
+            """,
+            (student_id,),
+        )
 
-        completed_courses = query_db("""
-            SELECT DISTINCT
-                cl.class_id AS class_id,
-                c.course_name,
-                c.course_credits
-            FROM work_load w
-            JOIN assignments a ON w.assignment_id = a.assignment_id
-            JOIN classes cl ON a.class_id = cl.class_id
-            JOIN courses c ON cl.course_id = c.course_id
-            WHERE w.student_id = %s
-        """, (user["student_id"],))
+        today = date.today()
 
-        # 🔑 NEW: don’t show the same class as both current *and* completed
-        current_ids = {c["class_id"] for c in current_courses}
-        completed_courses = [
-            c for c in completed_courses
-            if c["class_id"] not in current_ids
-        ]
+        for row in schedule_rows:
+            start = row.get("term_start")
+            end   = row.get("term_end")
+
+            # If no dates, treat as current (safe default for synthetic data)
+            if not start or not end:
+                current_courses.append(row)
+                continue
+
+            if start <= today <= end:
+                current_courses.append(row)
+            elif today < start:
+                upcoming_courses.append(row)
+            else:
+                completed_courses.append(row)
+
+        # (Optional) If you still want to use work_load to mark completion,
+        # you could intersect completed_courses with any class that has
+        # work_load entries. For now, term-based is enough.
 
     return render_template(
         "student/courses.html",
         user=user,
         current=current_courses,
+        upcoming=upcoming_courses,
         completed=completed_courses,
     )
 
@@ -1225,7 +1395,6 @@ def course_assignments(class_id):
             return "No due date"
         return dt.strftime("%b %d, %Y · %I:%M %p")
 
-    from datetime import datetime
     now = datetime.utcnow()  # MySQL DATETIME is stored in UTC
 
     formatted = []
@@ -1353,8 +1522,6 @@ def course_cengage(class_id):
 @bp.route("/course/<int:class_id>/grades")
 @login_required
 def course_grades(class_id):
-    from datetime import datetime
-
     user, course = _get_course_context_or_redirect(class_id)
     if not course:
         return redirect(url_for("main.courses"))

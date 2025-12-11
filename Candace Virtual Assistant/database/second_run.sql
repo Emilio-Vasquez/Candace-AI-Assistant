@@ -186,3 +186,16 @@ WHERE student_id = 1000001;
 UPDATE users
 SET student_id = 1000001
 WHERE email = 'alex.rivera@candace.local';
+
+UPDATE classes
+SET term_code = '2025FA',
+    term_start = '2025-09-01',
+    term_end   = '2025-12-20'
+WHERE class_id IN (1001, 1002, 1003, 1004);  -- ENG 101, PSY 101, MAT 171, CST 161
+
+-- Spring 2026 classes (upcoming)
+UPDATE classes
+SET term_code = '2026SP',
+    term_start = '2026-01-20',
+    term_end   = '2026-05-15'
+WHERE class_id IN (2001, 2002, 2003, 2004, 2005);
