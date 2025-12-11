@@ -236,108 +236,108 @@ JOIN classes cl  ON a.class_id   = cl.class_id
 JOIN courses c   ON cl.course_id = c.course_id
 WHERE c.course_name = 'MAT 172 - Unified Calculus II';
 
--- =====================================================
--- ENG 102 - English Composition II
--- Last two: Final Research Essay + Final Exam -> submitted, no score yet
--- =====================================================
-INSERT INTO assignment_grades (student_id, assignment_id, score, submitted_at, status)
-SELECT
-  1000001 AS student_id,
-  a.assignment_id,
-  CASE a.assignment_name
-    WHEN 'Diagnostic Writing: Literary Analysis'                   THEN 16   -- /20
-    WHEN 'Response Paper 1: The Story of an Hour & Araby'         THEN 25   -- /30
-    WHEN 'Response Paper 2: Chopin''s The Awakening'              THEN 34   -- /40
-    WHEN 'Response Paper 3: A Rose for Emily'                     THEN 32   -- /40
-    WHEN 'Literary Terms Quiz'                                    THEN 17   -- /20
-    WHEN 'Response Paper 4: Hurston & Baldwin Stories'            THEN 34   -- /40
-    WHEN 'Midterm Exam: Fiction & Literary Terms'                 THEN 86   -- /100
-    WHEN 'Research Essay Draft: Drama or Poetry'                  THEN 32   -- /40
-    WHEN 'Annotated Bibliography: Research Essay'                 THEN 27   -- /30
-    -- Last two -> no score yet
-    WHEN 'Final Research Essay: Literary Argument'                THEN NULL
-    WHEN 'Final Exam: Poetry, Drama & Fiction'                    THEN NULL
-    ELSE a.points
-  END AS score,
-  a.due_at AS submitted_at,
-  CASE
-    WHEN a.assignment_name IN ('Final Research Essay: Literary Argument',
-                               'Final Exam: Poetry, Drama & Fiction')
-      THEN 'submitted'
-    ELSE 'graded'
-  END AS status
-FROM assignments a
-JOIN classes cl  ON a.class_id   = cl.class_id
-JOIN courses c   ON cl.course_id = c.course_id
-WHERE c.course_name = 'ENG 102 - English Composition II';
+-- -- =====================================================
+-- -- ENG 102 - English Composition II
+-- -- Last two: Final Research Essay + Final Exam -> submitted, no score yet
+-- -- =====================================================
+-- INSERT INTO assignment_grades (student_id, assignment_id, score, submitted_at, status)
+-- SELECT
+--   1000001 AS student_id,
+--   a.assignment_id,
+--   CASE a.assignment_name
+--     WHEN 'Diagnostic Writing: Literary Analysis'                   THEN 16   -- /20
+--     WHEN 'Response Paper 1: The Story of an Hour & Araby'         THEN 25   -- /30
+--     WHEN 'Response Paper 2: Chopin''s The Awakening'              THEN 34   -- /40
+--     WHEN 'Response Paper 3: A Rose for Emily'                     THEN 32   -- /40
+--     WHEN 'Literary Terms Quiz'                                    THEN 17   -- /20
+--     WHEN 'Response Paper 4: Hurston & Baldwin Stories'            THEN 34   -- /40
+--     WHEN 'Midterm Exam: Fiction & Literary Terms'                 THEN 86   -- /100
+--     WHEN 'Research Essay Draft: Drama or Poetry'                  THEN 32   -- /40
+--     WHEN 'Annotated Bibliography: Research Essay'                 THEN 27   -- /30
+--     -- Last two -> no score yet
+--     WHEN 'Final Research Essay: Literary Argument'                THEN NULL
+--     WHEN 'Final Exam: Poetry, Drama & Fiction'                    THEN NULL
+--     ELSE a.points
+--   END AS score,
+--   a.due_at AS submitted_at,
+--   CASE
+--     WHEN a.assignment_name IN ('Final Research Essay: Literary Argument',
+--                                'Final Exam: Poetry, Drama & Fiction')
+--       THEN 'submitted'
+--     ELSE 'graded'
+--   END AS status
+-- FROM assignments a
+-- JOIN classes cl  ON a.class_id   = cl.class_id
+-- JOIN courses c   ON cl.course_id = c.course_id
+-- WHERE c.course_name = 'ENG 102 - English Composition II';
 
--- =====================================================
--- PHY 111 - Mechanics
--- Last two: Test 5 + Final Exam -> submitted, no score yet
--- =====================================================
-INSERT INTO assignment_grades (student_id, assignment_id, score, submitted_at, status)
-SELECT
-  1000001 AS student_id,
-  a.assignment_id,
-  CASE a.assignment_name
-    WHEN 'Homework 1: Units, Vectors & Motion'                    THEN 34   -- /40
-    WHEN 'Test 1: Units, 1D & 2D Kinematics'                      THEN 84   -- /100
-    WHEN 'Homework 2: Newton''s Laws & Friction'                  THEN 35   -- /40
-    WHEN 'Test 2: Newton''s Laws & Circular Motion'               THEN 88   -- /100
-    WHEN 'Homework 3: Work, Energy & Power'                       THEN 36   -- /40
-    WHEN 'Test 3: Work & Energy'                                  THEN 90   -- /100
-    WHEN 'Homework 4: Momentum & Collisions'                      THEN 35   -- /40
-    WHEN 'Test 4: Momentum & Center of Mass'                      THEN 89   -- /100
-    WHEN 'Homework 5: Rotation, Gravitation & Fluids'             THEN 34   -- /40
-    -- Last two -> no score yet
-    WHEN 'Test 5: Rotation, Gravitation & Fluids'                 THEN NULL -- e.g. /120
-    WHEN 'Final Exam: Comprehensive Mechanics'                    THEN NULL
-    ELSE a.points
-  END AS score,
-  a.due_at AS submitted_at,
-  CASE
-    WHEN a.assignment_name IN ('Test 5: Rotation, Gravitation & Fluids',
-                               'Final Exam: Comprehensive Mechanics')
-      THEN 'submitted'
-    ELSE 'graded'
-  END AS status
-FROM assignments a
-JOIN classes cl  ON a.class_id   = cl.class_id
-JOIN courses c   ON cl.course_id = c.course_id
-WHERE c.course_name = 'PHY 111 - Mechanics';
+-- -- =====================================================
+-- -- PHY 111 - Mechanics
+-- -- Last two: Test 5 + Final Exam -> submitted, no score yet
+-- -- =====================================================
+-- INSERT INTO assignment_grades (student_id, assignment_id, score, submitted_at, status)
+-- SELECT
+--   1000001 AS student_id,
+--   a.assignment_id,
+--   CASE a.assignment_name
+--     WHEN 'Homework 1: Units, Vectors & Motion'                    THEN 34   -- /40
+--     WHEN 'Test 1: Units, 1D & 2D Kinematics'                      THEN 84   -- /100
+--     WHEN 'Homework 2: Newton''s Laws & Friction'                  THEN 35   -- /40
+--     WHEN 'Test 2: Newton''s Laws & Circular Motion'               THEN 88   -- /100
+--     WHEN 'Homework 3: Work, Energy & Power'                       THEN 36   -- /40
+--     WHEN 'Test 3: Work & Energy'                                  THEN 90   -- /100
+--     WHEN 'Homework 4: Momentum & Collisions'                      THEN 35   -- /40
+--     WHEN 'Test 4: Momentum & Center of Mass'                      THEN 89   -- /100
+--     WHEN 'Homework 5: Rotation, Gravitation & Fluids'             THEN 34   -- /40
+--     -- Last two -> no score yet
+--     WHEN 'Test 5: Rotation, Gravitation & Fluids'                 THEN NULL -- e.g. /120
+--     WHEN 'Final Exam: Comprehensive Mechanics'                    THEN NULL
+--     ELSE a.points
+--   END AS score,
+--   a.due_at AS submitted_at,
+--   CASE
+--     WHEN a.assignment_name IN ('Test 5: Rotation, Gravitation & Fluids',
+--                                'Final Exam: Comprehensive Mechanics')
+--       THEN 'submitted'
+--     ELSE 'graded'
+--   END AS status
+-- FROM assignments a
+-- JOIN classes cl  ON a.class_id   = cl.class_id
+-- JOIN courses c   ON cl.course_id = c.course_id
+-- WHERE c.course_name = 'PHY 111 - Mechanics';
 
--- =====================================================
--- PHYL 111 - Mechanics Lab
--- Last two: Lab Practical + Final Lab Report -> submitted, no score yet
--- =====================================================
-INSERT INTO assignment_grades (student_id, assignment_id, score, submitted_at, status)
-SELECT
-  1000001 AS student_id,
-  a.assignment_id,
-  CASE a.assignment_name
-    WHEN 'Lab 1: Measurement & Uncertainty'                       THEN 22   -- /25
-    WHEN 'Lab 2: One-Dimensional Kinematics'                      THEN 23   -- /25
-    WHEN 'Lab 3: Projectile Motion'                               THEN 22   -- /25
-    WHEN 'Lab 4: Newton''s Second Law'                            THEN 23   -- /25
-    WHEN 'Lab 5: Work & Energy'                                   THEN 24   -- /25
-    WHEN 'Lab 6: Momentum & Collisions'                           THEN 23   -- /25
-    WHEN 'Lab 7: Rotational Dynamics'                             THEN 22   -- /25
-    WHEN 'Lab 8: Fluids & Buoyancy'                               THEN 24   -- /25
-    -- Last two -> no score yet
-    WHEN 'Lab Practical Exam'                                     THEN NULL
-    WHEN 'Final Lab Report: Experimental Portfolio'               THEN NULL
-    ELSE a.points
-  END AS score,
-  a.due_at AS submitted_at,
-  CASE
-    WHEN a.assignment_name IN ('Lab Practical Exam',
-                               'Final Lab Report: Experimental Portfolio')
-      THEN 'submitted'
-    ELSE 'graded'
-  END AS status
-FROM assignments a
-JOIN classes cl  ON a.class_id   = cl.class_id
-JOIN courses c   ON cl.course_id = c.course_id
-WHERE c.course_name = 'PHYL 111 - Mechanics Lab';
+-- -- =====================================================
+-- -- PHYL 111 - Mechanics Lab
+-- -- Last two: Lab Practical + Final Lab Report -> submitted, no score yet
+-- -- =====================================================
+-- INSERT INTO assignment_grades (student_id, assignment_id, score, submitted_at, status)
+-- SELECT
+--   1000001 AS student_id,
+--   a.assignment_id,
+--   CASE a.assignment_name
+--     WHEN 'Lab 1: Measurement & Uncertainty'                       THEN 22   -- /25
+--     WHEN 'Lab 2: One-Dimensional Kinematics'                      THEN 23   -- /25
+--     WHEN 'Lab 3: Projectile Motion'                               THEN 22   -- /25
+--     WHEN 'Lab 4: Newton''s Second Law'                            THEN 23   -- /25
+--     WHEN 'Lab 5: Work & Energy'                                   THEN 24   -- /25
+--     WHEN 'Lab 6: Momentum & Collisions'                           THEN 23   -- /25
+--     WHEN 'Lab 7: Rotational Dynamics'                             THEN 22   -- /25
+--     WHEN 'Lab 8: Fluids & Buoyancy'                               THEN 24   -- /25
+--     -- Last two -> no score yet
+--     WHEN 'Lab Practical Exam'                                     THEN NULL
+--     WHEN 'Final Lab Report: Experimental Portfolio'               THEN NULL
+--     ELSE a.points
+--   END AS score,
+--   a.due_at AS submitted_at,
+--   CASE
+--     WHEN a.assignment_name IN ('Lab Practical Exam',
+--                                'Final Lab Report: Experimental Portfolio')
+--       THEN 'submitted'
+--     ELSE 'graded'
+--   END AS status
+-- FROM assignments a
+-- JOIN classes cl  ON a.class_id   = cl.class_id
+-- JOIN courses c   ON cl.course_id = c.course_id
+-- WHERE c.course_name = 'PHYL 111 - Mechanics Lab';
 
 SET SQL_SAFE_UPDATES = 1;
